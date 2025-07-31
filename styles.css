@@ -1,0 +1,372 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f1f3f6;
+}
+
+/* Header Styles */
+header {
+    background-color: #2874f0;
+    color: white;
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: flex-end;
+    cursor: pointer;
+}
+
+.logo {
+    height: 20px;
+    margin-right: 10px;
+}
+
+.explore {
+    font-size: 11px;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+}
+
+.plus {
+    color: #ffe500;
+    font-weight: 500;
+    margin-left: 2px;
+}
+
+.plus-img {
+    height: 10px;
+    margin-left: 2px;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    flex-grow: 0.5;
+    margin: 0 20px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    outline: none;
+    border-radius: 2px 0 0 2px;
+    font-size: 14px;
+}
+
+.search-container button {
+    background-color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 0 2px 2px 0;
+    cursor: pointer;
+    color: #2874f0;
+}
+
+.login-container .login-btn {
+    background-color: white;
+    color: #2874f0;
+    border: none;
+    padding: 7px 40px;
+    font-weight: 500;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.nav-item i {
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.cart {
+    margin-left: 20px;
+}
+
+.cart i {
+    font-size: 16px;
+    margin-right: 5px;
+}
+
+/* Categories Section */
+.categories {
+    display: flex;
+    justify-content: space-around;
+    background-color: white;
+    padding: 15px 0;
+    max-width: 1200px;
+    margin: 10px auto;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1);
+}
+
+.category {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+.category img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+}
+
+.category span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #212121;
+}
+
+/* Banner Section */
+.banner {
+    max-width: 1200px;
+    margin: 10px auto;
+}
+
+.banner img {
+    width: 100%;
+    border-radius: 2px;
+}
+
+/* Products Section */
+.products {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 1px 1px 0 rgba(0,0,0,0.1);
+}
+
+.products h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #212121;
+}
+
+.product-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.product-card {
+    width: 23%;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+    padding: 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: box-shadow 0.3s;
+}
+
+.product-card:hover {
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Product Image Styles */
+.product-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    background-color: #f7f7f7; /* Light background if image takes time to load */
+    border-radius: 4px;
+}
+
+/* Fallback for broken images */
+.product-card img::before {
+    content: "Image not available";
+    display: block;
+    text-align: center;
+    line-height: 180px;
+    color: #999;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+}
+
+.product-card h3 {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #212121;
+}
+
+.product-card p {
+    font-size: 12px;
+    color: #878787;
+    margin-bottom: 10px;
+}
+
+.price {
+    display: flex;
+    align-items: center;
+}
+
+.current-price {
+    font-size: 16px;
+    font-weight: 500;
+    margin-right: 8px;
+}
+
+.original-price {
+    font-size: 12px;
+    color: #878787;
+    text-decoration: line-through;
+    margin-right: 8px;
+}
+
+.discount {
+    font-size: 12px;
+    color: #388e3c;
+}
+
+/* Footer Section */
+footer {
+    background-color: #172337;
+    color: white;
+    padding: 30px 0 10px;
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    padding: 0 20px;
+    margin-bottom: 30px;
+}
+
+.footer-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-section h3 {
+    font-size: 12px;
+    color: #878787;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.footer-section ul {
+    list-style: none;
+}
+
+.footer-section ul li {
+    font-size: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.footer-section ul li:hover {
+    text-decoration: underline;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #454d5e;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-size: 12px;
+    color: #878787;
+}
+
+/* Responsive Design for Footer */
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-container {
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+    
+    .logo-container {
+        order: 1;
+        margin-bottom: 10px;
+    }
+    
+    .search-container {
+        order: 3;
+        width: 100%;
+        margin: 10px 0;
+    }
+    
+    .login-container {
+        order: 2;
+    }
+    
+    .nav-item {
+        display: none;
+    }
+    
+    .categories {
+        overflow-x: auto;
+        justify-content: flex-start;
+    }
+    
+    .category {
+        min-width: 80px;
+        margin: 0 10px;
+    }
+    
+    .product-card {
+        width: 48%;
+    }
+    
+    .footer-section {
+        flex-wrap: wrap;
+    }
+    
+    .footer-section > div {
+        width: 50%;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-card {
+        width: 100%;
+    }
+}
