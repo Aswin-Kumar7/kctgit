@@ -1,119 +1,99 @@
-# 🍴 Food Ordering System  
 
-A **full-stack food ordering application** built with modern technologies:  
+# Food Ordering System
 
-<p align="center">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
-  <img src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white" />
-  <img src="https://img.shields.io/badge/Express.js-000000?logo=express&logoColor=white" />
-  <img src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white" />
-  <img src="https://img.shields.io/badge/TailwindCSS-38B2AC?logo=tailwind-css&logoColor=white" />
-</p>
+A full-stack food ordering application built with TypeScript, Node.js (Express) backend, and React frontend.
 
----
+## Features
 
-## ✨ Features
+- 🍽️ Browse menu items with categories
+- 🛒 Add items to cart with quantity management
+- 💳 Place orders with total calculation
+- 📋 View order details and history
+- 🔐 Authentication with JWT and email OTP
+- 🎨 Modern UI with TailwindCSS
+- 🔒 Type-safe development with TypeScript
 
-- 🍽️ Browse menu items by category  
-- 🛒 Add to cart with quantity control  
-- 💳 Place orders with automatic total calculation  
-- 📋 View order history & order details  
-- 🔐 Secure authentication with **JWT + Email OTP**  
-- 🎨 Modern UI built with **TailwindCSS**  
-- 🔒 Fully type-safe development with **TypeScript**
-
----
-
-## 📂 Project Structure
+## Project Structure
 
 ```
 food-ordering-system/
-├── backend/          # Node.js + Express + TypeScript (API + Auth + DB)
-├── frontend/         # React + Vite + TypeScript (UI)
-├── README.md         # Documentation
-└── .gitignore        # Ignored files
+├── backend/          # Node.js + Express + TypeScript
+├── frontend/         # React + Vite + TypeScript
+├── README.md         # This file
+└── .gitignore        # Git ignore rules
 ```
 
----
+## Backend Setup
 
-## 🚀 Backend Setup
+1. Install dependencies:
 
-### 1. Clone & Install
-
-```bash
+```sh
 cd backend
 npm install
 ```
 
-### 2. Configure Environment
+2. Configure environment variables:
 
-Create a `.env` file in `backend/` and update values:  
+Create a `.env` file inside `backend/`:
 
 ```env
 PORT=3001
+NODE_ENV=development
 MONGO_URI=mongodb://localhost:27017/food_ordering
-JWT_SECRET=your_secret_key
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
 ```
 
-📌 **Note:**  
-- For Gmail, generate an **App Password** instead of using your main password.  
-- MongoDB should be running locally (`mongod`).  
+3. Configure SMTP in `backend/src/config/config.ts`:
 
-### 3. Start the Backend
+```ts
+smtp: {
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  user: 'your_email@gmail.com',
+  pass: 'your_app_password',
+  from: 'Food Ordering <your_email@gmail.com>',
+  allowSelfSigned: false,
+  ignoreTLS: false,
+  devMode: true,
+},
+```
 
-```bash
+4. Run backend:
+
+```sh
 npm run dev
 ```
 
-👉 Backend runs at: `http://localhost:3001`  
+Default server: `http://localhost:3001`
 
-APIs available:  
-- 📖 Health check → `/health`  
-- 🍽️ Menu → `/api/menu`  
-- 🔐 Auth → `/api/auth`  
-- 📋 Orders → `/api/order`  
+## Frontend Setup
 
----
-
-## 🎨 Frontend Setup
-
-```
+```sh
 cd frontend
 npm install
 npm run dev
 ```
 
-👉 Open [http://localhost:5173](http://localhost:5173) in browser  
+Open `http://localhost:5173`
 
----
+### Frontend Routing
 
-## 🔑 Auth Flow
+- `/intro` welcome screen
+- `/login` and `/register` auth pages
+- `/menu`, `/cart`, `/orders` are protected by JWT
 
-- On **login/register**, OTP is sent via email  
-- OTP is valid for **5 minutes** (one-time use)  
-- On success → JWT token saved in `localStorage`  
-- Axios automatically adds `Authorization: Bearer <token>`  
-- On `401 Unauthorized`, the app logs out automatically  
+### Auth Flow
 
----
+- After login/OTP verification, token is saved into localStorage
+- Axios attaches `Authorization: Bearer <token>` automatically
+- On 401 responses, the app auto-logs out
 
-## 🛠️ Troubleshooting
+### OTP Notes
 
-- **MongoDB not connecting?** → Check `mongod` is running on default port.  
-- **Email OTP not sending?** → Make sure:  
-  - Gmail App Password is set in `.env`  
-  - Less secure app access is allowed (if using non-Google SMTP).  
-- **Frontend not opening?** → Ensure port `5173` is not blocked.  
+- OTP is emailed via SMTP (Gmail supported with app password)
+- OTP expires in 5 minutes and is one-time-use
 
----
+## Notes
 
-## 📌 Notes
-
-- Default MongoDB: `mongodb://localhost:27017/food_ordering`  
-- For development, OTP is **also printed in terminal** for quick testing.  
-
----
+- MongoDB URI: `mongodb://localhost:27017/food_ordering`
+- For dev, OTP codes are NOT returned in responses.
