@@ -8,10 +8,10 @@
 
 ## 👥 Meet the Dream Team  
 
-- **Aswin** → Backend wizard ⚙️ (Databases, APIs, Security)  
-- **Smirit** → Frontend architect 🎨 (UI/UX, React, Animations)  
-- **Naveen** → DevOps enabler ☁️ (Deployment, Scaling, CI/CD)  
-- **Mayakanan** → Systems thinker 🧠 (Architecture, Integrations)  
+- **Aswin Kumar** 
+- **Smriti**  
+- **Naveen**  
+- **Mayakanan** 
 
 Together, we **design → develop → deploy** cutting-edge web applications.  
 
