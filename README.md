@@ -1,7 +1,7 @@
 # 🚀 Full Stack Web Development Team  
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?size=28&duration=4000&color=4B9CE2&center=true&vCenter=true&width=600&lines=We+are+Aswin%2C+Smirit%2C+Naveen%2C+Mayakanan;Building+Full+Stack+Web+Projects;Learning+by+Building+%F0%9F%9A%80" />
+  <img src="https://readme-typing-svg.herokuapp.com?size=28&duration=4000&color=4B9CE2&center=true&vCenter=true&width=600&lines=We+are+Aswin%2C+Smriti%2C+Naveen%2C+Mayakanan;Building+Full+Stack+Web+Projects;Learning+by+Building+%F0%9F%9A%80" />
 </p>
 
 ---
