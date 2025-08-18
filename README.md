@@ -48,10 +48,7 @@ We teamed up to:
 Our repository is **multi-project**, organized by branches.  
 
 - 🍴 **Kore (Food Ordering System)** → [Branch: kore](../../tree/kore)  
-- 📊 **Analytics Dashboard** → [Branch: dashboard](../../tree/dashboard)  
-- 🎮 **GameHub (Mini Gaming Platform)** → [Branch: gamehub](../../tree/gamehub)  
-- 💼 **Portfolio Builder** → [Branch: portfolio](../../tree/portfolio)  
-- 🛒 **E-Commerce Store** → [Branch: ecommerce](../../tree/ecommerce)  
+- 🛒 **Flipkart Clone** →  
 
 🔜 More coming soon...  
 
