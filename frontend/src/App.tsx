@@ -13,6 +13,7 @@ import CartPage from './pages/Cart';
 import OrdersPage from './pages/Orders';
 import Admin from './pages/Admin';
 import AdminMenuManagement from './pages/AdminMenuManagement.tsx';
+import Profile from './pages/Profile';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +27,7 @@ const App: React.FC = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/menu" element={<ProtectedRoute><MenuPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
             <Route path="/admin" element={<Admin />} />

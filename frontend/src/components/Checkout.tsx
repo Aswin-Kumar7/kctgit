@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaArrowLeft, FaCheck, FaSpinner } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { createOrder } from '../services/api';
 import { Order } from '../types';
 
@@ -11,22 +12,32 @@ interface CheckoutProps {
 
 const Checkout: React.FC<CheckoutProps> = ({ onBack, onClose }) => {
   const { state, dispatch } = useCart();
+  const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  useEffect(() => {
+    if (user) {
+      if ((user as any).name) setCustomerName((user as any).name);
+      if ((user as any).phone) setCustomerPhone((user as any).phone);
+    }
+  }, [user]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!customerName.trim()) {
-      setError('Please enter your name');
+    // prefer profile values when available
+    const nameToUse = (user && (user as any).name) ? (user as any).name : customerName;
+    const phoneToUse = (user && (user as any).phone) ? (user as any).phone : customerPhone;
+
+    if (!nameToUse || !nameToUse.trim()) {
+      setError('Your profile is missing a name. Please update your profile before placing orders.');
       return;
     }
 
-    if (!customerPhone.trim()) {
-      setError('Please enter your phone number');
+    if (!phoneToUse || !phoneToUse.trim()) {
+      setError('Your profile is missing a phone number. Please update your profile before placing orders.');
       return;
     }
 
@@ -39,16 +50,21 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack, onClose }) => {
           menuItemId: item.menuItem.id,
           quantity: item.quantity,
         })),
-        customerName: customerName.trim(),
-        customerPhone: customerPhone.trim(),
+        customerName: nameToUse.trim(),
+        customerPhone: phoneToUse.trim(),
       };
+
+  console.log('Placing order, payload:', orderData);
 
       const order = await createOrder(orderData);
       setOrderPlaced(order);
       dispatch({ type: 'CLEAR_CART' });
     } catch (err) {
-      setError('Failed to place order. Please try again.');
-      console.error('Error placing order:', err);
+  // Try to extract axios response if available
+  const anyErr = err as any;
+  console.error('Error placing order:', anyErr, anyErr?.response?.data || anyErr?.message);
+  const serverMsg = anyErr?.response?.data?.error || anyErr?.response?.data?.message || anyErr?.message;
+  setError(serverMsg ? `Failed to place order: ${serverMsg}` : 'Failed to place order. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -116,40 +132,21 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack, onClose }) => {
         {/* Checkout Form */}
         <div className="flex-1 overflow-y-auto p-4">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Customer Information */}
+            {/* Customer Information (sourced from profile) */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">Customer Information</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="input-field"
-                    placeholder="Enter your full name"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="input-field"
-                    placeholder="Enter your phone number"
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                {user ? (
+                  <div className="text-sm text-gray-700">
+                    <div><span className="font-medium">Name: </span>{(user as any).name || (user as any).username}</div>
+                    <div><span className="font-medium">Phone: </span>{(user as any).phone || <span className="text-red-600">(not set)</span>}</div>
+                    {!((user as any).name && (user as any).phone) && (
+                      <div className="text-sm text-yellow-600 mt-1">Please update your profile with a name and phone number before placing orders.</div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-700">You must be logged in to place an order.</div>
+                )}
               </div>
             </div>
 
@@ -191,7 +188,7 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack, onClose }) => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || Boolean(user && (!((user as any).name && (user as any).phone)))}
               className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting ? (

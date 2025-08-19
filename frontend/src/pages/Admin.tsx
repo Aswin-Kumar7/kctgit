@@ -4,7 +4,6 @@ import { getAllOrders, updateOrderStatus } from '../services/api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import AdminMenuManager from '../components/AdminMenuManager';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const statusOptions = ['pending','confirmed','preparing','ready','delivered'];
@@ -24,14 +23,8 @@ const Admin: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    if (user.email !== 'admin@kore.com') {
-      navigate('/menu');
-      return;
-    }
+    if (!user) { navigate('/login'); return; }
+    if (user.email !== 'admin@kore.com') { navigate('/menu'); return; }
     fetchOrders();
     // eslint-disable-next-line
   }, [user]);
@@ -58,15 +51,16 @@ const Admin: React.FC = () => {
     }
   };
 
-  if (!user || user.email !== 'admin@kore.com') {
-    return null;
-  }
+  if (!user || user.email !== 'admin@kore.com') return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-gray-50 to-gray-100">
       <Navbar onCartClick={() => {}} />
       <div className="p-8 max-w-6xl mx-auto">
-        <h2 className="text-3xl font-extrabold mb-6 text-gray-800">Orders — Admin</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-extrabold text-gray-800"> Order Management</h2>
+          <button onClick={() => navigate('/admin/menumanagement')} className="btn-primary">Go to Menu Management</button>
+        </div>
 
         {loading ? (
           <div className="text-gray-600">Loading orders…</div>
@@ -117,7 +111,7 @@ const Admin: React.FC = () => {
                           <ul className="mt-2 space-y-2">
                             {order.items.map((it: any, idx: number) => (
                               <li key={idx} className="flex justify-between items-center">
-                                <div className="text-gray-800">{it.name} <span className="text-gray-500 text-sm">x{it.quantity}</span></div>
+                                <div className="text-gray-800">{it.name} <span className="text-sm text-gray-500">x{it.quantity}</span></div>
                                 <div className="font-semibold text-gray-800">${(it.price * it.quantity).toFixed(2)}</div>
                               </li>
                             ))}
@@ -139,11 +133,6 @@ const Admin: React.FC = () => {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Menu manager for admin */}
-      <div className="p-8 max-w-6xl mx-auto">
-        <AdminMenuManager />
       </div>
     </div>
   );

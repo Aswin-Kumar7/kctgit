@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { getMe } from '../services/api';
 
-export interface AuthUser { id: string; username: string; email: string }
+export interface AuthUser { id: string; username: string; email: string; name?: string; phone?: string }
 
 interface AuthState {
   user: AuthUser | null;
@@ -9,6 +9,7 @@ interface AuthState {
   setAuth: (data: { token: string; user: AuthUser }) => void;
   logout: () => void;
   loading: boolean;
+  refreshUser?: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -51,8 +52,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   setUser(null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const me = await getMe();
+      setUser(me);
+    } catch (err) {
+      // ignore
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, setAuth, logout, loading }}>
+  <AuthContext.Provider value={{ user, token, setAuth, logout, loading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

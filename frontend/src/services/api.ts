@@ -30,13 +30,7 @@ const api = axios.create({
 
 // Request interceptor for auth token
 api.interceptors.request.use((config) => {
-  const getTokenFromCookie = () => {
-    if (typeof document === 'undefined') return null;
-    const m = document.cookie.match(/(?:^|; )token=([^;]+)/);
-    return m ? decodeURIComponent(m[1]) : null;
-  };
-
-  const token = localStorage.getItem('token') || getTokenFromCookie();
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers = config.headers || {};
     (config.headers as any).Authorization = `Bearer ${token}`;
@@ -48,14 +42,15 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-  // Do not auto-remove token/cookie on 401 to allow testing multiple sessions in different browsers.
-  // UI should handle logout explicitly when necessary.
+    if (err?.response?.status === 401) {
+      localStorage.removeItem('token');
+    }
     return Promise.reject(err);
   }
 );
 
 // Auth API
-export const registerUser = async (data: { username: string; email: string; password: string }): Promise<void> => {
+export const registerUser = async (data: { username: string; email: string; password: string; name?: string; phone?: string }): Promise<void> => {
   await api.post('/auth/register', data);
 };
 
@@ -74,9 +69,18 @@ export const verifyOtp = async (data: { email: string; code: string }): Promise<
   return res.data;
 };
 
-export const getMe = async (): Promise<{ id: string; username: string; email: string }> => {
+export const getMe = async (): Promise<{ id: string; username: string; email: string; name?: string; phone?: string }> => {
   const res = await api.get('/auth/me');
   return res.data.user;
+};
+
+export const updateMe = async (data: { name?: string; phone?: string }): Promise<{ id: string; username: string; email: string; name?: string; phone?: string }> => {
+  const res = await api.put('/auth/me', data);
+  return res.data.user;
+};
+
+export const deleteMe = async (): Promise<void> => {
+  await api.delete('/auth/me');
 };
 
 // Menu API
@@ -146,8 +150,13 @@ export const getOrder = async (id: string): Promise<Order> => {
 };
 
 export const getMyOrders = async (): Promise<Order[]> => {
-  const res = await api.get<ApiResponse<Order[]>>('/order/me');
-  return res.data.data || [];
+  try {
+    const res = await api.get<ApiResponse<Order[]>>('/orders/me');
+    return (res.data as any).data || res.data || [];
+  } catch {
+    const res2 = await api.get<ApiResponse<Order[]>>('/order/me');
+    return (res2.data as any).data || res2.data || [];
+  }
 };
 
 export default api;

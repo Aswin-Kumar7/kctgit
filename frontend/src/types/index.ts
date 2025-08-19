@@ -23,6 +23,7 @@ export interface Order {
   createdAt: Date;
   customerName?: string;
   customerPhone?: string;
+  customerAddress?: string;
 }
 
 export interface CreateOrderRequest {
@@ -32,6 +33,15 @@ export interface CreateOrderRequest {
   }>;
   customerName?: string;
   customerPhone?: string;
+}
+
+export interface AuthUser {
+  id: string;
+  username: string;
+  email: string;
+  name?: string;
+  phone?: string;
+  address?: string;
 }
 
 export interface ApiResponse<T> {

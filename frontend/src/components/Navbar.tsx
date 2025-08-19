@@ -17,7 +17,8 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
   const [open, setOpen] = useState(false);
 
   const itemCount = state.items.reduce((total, item) => total + item.quantity, 0);
-  const isAdminPanel = location.pathname.startsWith('/admin');
+  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isAdmin = user?.email === 'admin@kore.com';
 
   return (
     <nav className="sticky top-0 z-40 bg-gradient-to-r from-orange-500 via-orange-600 to-rose-500 shadow-lg">
@@ -30,18 +31,25 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
             </div>
 
             <div className="flex items-center gap-3">
-              {!isAdminPanel && (
-                <button onClick={onCartClick} className="relative p-3 text-white/90 hover:text-white focus:outline-none">
-                  <FaShoppingCart className="h-6 w-6" />
-                  <AnimatePresence>
-                    {itemCount > 0 && (
-                      <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: 'spring', stiffness: 300 }} className="absolute -top-1 -right-1 bg-white text-orange-700 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
-                        {itemCount}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+              {isAdmin && (
+                <button
+                  onClick={() => navigate('/admin')}
+                  className={`hidden md:inline-block text-white/90 hover:text-white transition-colors border-b-2 pb-0.5 ${isActive('/admin') ? 'border-white' : 'border-transparent'}`}
+                >
+                  Admin
                 </button>
               )}
+
+              <button onClick={onCartClick} className="relative p-3 text-white/90 hover:text-white focus:outline-none">
+                <FaShoppingCart className="h-6 w-6" />
+                <AnimatePresence>
+                  {itemCount > 0 && (
+                    <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: 'spring', stiffness: 300 }} className="absolute -top-1 -right-1 bg-white text-orange-700 text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow">
+                      {itemCount}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </button>
 
               <div className="relative">
                 <button onClick={() => setOpen(v => !v)} className="flex items-center gap-2 text-white/90 hover:text-white">
@@ -50,18 +58,10 @@ const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
                 </button>
                 <AnimatePresence>
                   {open && (
-                    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg overflow-hidden">
-                      {!isAdminPanel && (
-                        <>
-                          <button onClick={() => { setOpen(false); navigate('/orders'); }} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                            <FaListUl /> Orders
-                          </button>
-                        </>
-                      )}
-                      {/* Admin-only shortcut to menu management */}
-                      {user?.email === 'admin@kore.com' && (
-                        <button onClick={() => { setOpen(false); navigate('/admin/menumanagement'); }} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2">
-                          <FaListUl /> Menu management
+                    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg overflow-hidden">
+                      {isAdmin && (
+                        <button onClick={() => { setOpen(false); navigate('/admin'); }} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                          Admin
                         </button>
                       )}
                       <button onClick={() => { logout(); setOpen(false); navigate('/login'); }} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2">

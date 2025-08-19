@@ -7,6 +7,7 @@ export interface IMenuItem extends Document {
   category?: string;
   isVegetarian?: boolean;
   imageId?: string; // GridFS file id as string
+  image?: string; // optional external image URL (useful for seeded items)
   createdAt: Date;
 }
 
@@ -17,6 +18,7 @@ const MenuItemSchema = new Schema<IMenuItem>({
   category: { type: String, trim: true, default: 'general' },
   isVegetarian: { type: Boolean, default: false },
   imageId: { type: String, trim: true },
+  image: { type: String, trim: true },
   createdAt: { type: Date, default: Date.now },
 });
 

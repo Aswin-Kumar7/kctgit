@@ -15,7 +15,8 @@ async function seed() {
       price: m.price,
       category: m.category,
       isVegetarian: m.isVegetarian,
-      imageId: undefined,
+  imageId: undefined,
+  image: m.image,
     });
     await doc.save();
     console.log('Seeded:', m.name);

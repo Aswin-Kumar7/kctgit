@@ -35,6 +35,7 @@ const OrdersPage: React.FC = () => {
     <div>
       <Navbar onCartClick={() => {}} />
       <div className="max-w-4xl mx-auto p-4">
+        <button onClick={() => window.location.replace('/menu')} className="mb-4 text-sm text-gray-700 hover:underline">← Back to menu</button>
         <h2 className="text-2xl font-bold mb-4">My Orders</h2>
         {loading && <p>Loading...</p>}
         {error && <p className="text-red-600">{error}</p>}

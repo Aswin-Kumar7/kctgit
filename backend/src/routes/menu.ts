@@ -21,14 +21,24 @@ function adminOnly(req: Request, res: Response, next: any) {
 }
 
 // GET /api/menu - Get all menu items
-router.get('/', async (req: Request, res: Response<ApiResponse<IMenuItem[]>>): Promise<void> => {
+router.get('/', async (req: Request, res: Response<ApiResponse<any[]>>): Promise<void> => {
     try {
         const { category, vegetarian } = req.query;
         const q: any = {};
         if (category && typeof category === 'string') q.category = category;
         if (vegetarian === 'true') q.isVegetarian = true;
-        const items = await MenuItemModel.find(q).sort({ createdAt: -1 }).lean().exec();
-        res.json({ success: true, data: items, message: 'Menu items retrieved successfully' });
+                const items = await MenuItemModel.find(q).sort({ createdAt: -1 }).lean().exec();
+                // normalize to frontend shape (id, image url)
+                const normalized = items.map(it => ({
+                        id: (it as any)._id?.toString() || it.id,
+                        name: it.name,
+                        description: it.description,
+                        price: it.price,
+                        category: it.category,
+                        isVegetarian: !!it.isVegetarian,
+                        image: it.imageId ? `/api/menu/image/${it.imageId}` : (it.image || undefined),
+                    }));
+                res.json({ success: true, data: normalized, message: 'Menu items retrieved successfully' });
     } catch (error) {
         console.error('Get menu error', error);
         res.status(500).json({ success: false, error: 'Failed to retrieve menu items' });
@@ -47,7 +57,7 @@ router.get('/categories', async (req: Request, res: Response<ApiResponse<string[
 });
 
 // GET /api/menu/:id - Get specific menu item
-router.get('/:id', async (req: Request, res: Response<ApiResponse<IMenuItem>>): Promise<void> => {
+router.get('/:id', async (req: Request, res: Response<ApiResponse<any>>): Promise<void> => {
     try {
         const { id } = req.params;
         const item = await MenuItemModel.findById(id).lean().exec();
@@ -55,7 +65,16 @@ router.get('/:id', async (req: Request, res: Response<ApiResponse<IMenuItem>>): 
             res.status(404).json({ success: false, error: 'Menu item not found' });
             return;
         }
-        res.json({ success: true, data: item as IMenuItem, message: 'Menu item retrieved successfully' });
+        const normalized = {
+            id: (item as any)._id?.toString() || (item as any).id,
+            name: item.name,
+            description: item.description,
+            price: item.price,
+            category: item.category,
+            isVegetarian: !!item.isVegetarian,
+            image: item.imageId ? `/api/menu/image/${item.imageId}` : (item.image || undefined),
+        };
+        res.json({ success: true, data: normalized as any, message: 'Menu item retrieved successfully' });
     } catch (error) {
         console.error('Get menu item error', error);
         res.status(500).json({ success: false, error: 'Failed to retrieve menu item' });
@@ -63,7 +82,7 @@ router.get('/:id', async (req: Request, res: Response<ApiResponse<IMenuItem>>): 
 });
 
 // POST /api/menu - Create a new menu item (admin only)
-router.post('/', adminOnly, async (req: AuthenticatedRequest, res: Response<ApiResponse<IMenuItem>>) => {
+router.post('/', adminOnly, async (req: AuthenticatedRequest, res: Response<ApiResponse<any>>) => {
     try {
         const body = req.body as Partial<IMenuItem>;
         if (!body || !body.name || typeof body.price !== 'number') {
@@ -77,9 +96,20 @@ router.post('/', adminOnly, async (req: AuthenticatedRequest, res: Response<ApiR
             category: body.category,
             isVegetarian: !!body.isVegetarian,
             imageId: body.imageId,
+            image: body.image,
         });
         await doc.save();
-        res.status(201).json({ success: true, data: doc.toObject() as IMenuItem, message: 'Menu item created' });
+        const created = doc.toObject();
+        const normalized = {
+            id: (created as any)._id.toString(),
+            name: created.name,
+            description: created.description,
+            price: created.price,
+            category: created.category,
+            isVegetarian: !!created.isVegetarian,
+            image: created.imageId ? `/api/menu/image/${created.imageId}` : (created.image || undefined),
+        };
+        res.status(201).json({ success: true, data: normalized as any, message: 'Menu item created' });
     } catch (error) {
         console.error('Create menu error', error);
         res.status(500).json({ success: false, error: 'Failed to create menu item' });
@@ -160,16 +190,27 @@ router.get('/image/:id', async (req: Request, res: Response) => {
 });
 
 // PUT /api/menu/:id - Update menu item (admin only)
-router.put('/:id', adminOnly, async (req: AuthenticatedRequest, res: Response<ApiResponse<IMenuItem>>) => {
+router.put('/:id', adminOnly, async (req: AuthenticatedRequest, res: Response<ApiResponse<any>>) => {
     try {
         const { id } = req.params;
         const update = req.body as Partial<IMenuItem>;
-        const updated = await MenuItemModel.findByIdAndUpdate(id, update, { new: true }).lean().exec();
+        // ensure we forward both imageId/image if present
+        const updateDoc: any = { ...update };
+        const updated = await MenuItemModel.findByIdAndUpdate(id, updateDoc, { new: true }).lean().exec();
         if (!updated) {
             res.status(404).json({ success: false, error: 'Menu item not found' });
             return;
         }
-        res.json({ success: true, data: updated as IMenuItem, message: 'Menu item updated' });
+        const normalized = {
+            id: (updated as any)._id?.toString() || (updated as any).id,
+            name: updated.name,
+            description: updated.description,
+            price: updated.price,
+            category: updated.category,
+            isVegetarian: !!updated.isVegetarian,
+            image: updated.imageId ? `/api/menu/image/${updated.imageId}` : (updated.image || undefined),
+        };
+        res.json({ success: true, data: normalized as any, message: 'Menu item updated' });
         return;
     } catch (error) {
         console.error('Update menu error', error);

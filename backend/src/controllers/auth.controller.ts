@@ -4,6 +4,7 @@ import User from '../models/User';
 import Otp from '../models/Otp';
 import sendEmail from '../utils/mailer';
 import config from '../config/config';
+import Order from '../models/Order';
 
 const JWT_SECRET = config.jwt.secret;
 const JWT_EXPIRES_IN_ENV = config.jwt.expiresIn;
@@ -76,7 +77,7 @@ export async function requestOtp(req: Request, res: Response): Promise<void> {
 		}
 		const user = await User.findOne({ email: email.toLowerCase() });
 		if (!user) {
-			res.json({ message: 'If the email exists, an OTP has been sent' });
+			res.status(404).json({ error: 'This email is not registered. Please register first.' });
 			return;
 		}
 		const code = generateOtpCode();
@@ -90,7 +91,6 @@ export async function requestOtp(req: Request, res: Response): Promise<void> {
 				html: `
 				<div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f7fa; padding: 40px;">
 				  <table align="center" width="600" style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.08);">
-
 					<tr>
 					  <td style="background: linear-gradient(90deg,rgb(255, 102, 0),rgb(255, 167, 36)); padding: 28px; text-align: center; color: white; font-size: 26px; font-weight: bold; letter-spacing: 1px;">
 						KORE
@@ -106,15 +106,12 @@ export async function requestOtp(req: Request, res: Response): Promise<void> {
 						  use the code below to complete your login to <strong>KORE</strong>.  
 						  This OTP is valid for <strong>10 minutes</strong>.
 						</p>
-						
 						<div style="font-size: 34px; font-weight: bold; letter-spacing: 6px; color: rgb(255, 145, 0); margin: 28px auto;">
 						  ${code}
 						</div>
-			  
 						<p style="font-size: 14px; color: #777; margin-top: 20px;">
 						  For your security, never share this code with anyone.
 						</p>
-			  
 						<a href="http://localhost:5173/login" 
 						   style="display: inline-block; margin-top: 28px; padding: 14px 28px; 
 						   background:rgb(255, 145, 0); color: #fff; text-decoration: none; border-radius: 8px; 
@@ -123,7 +120,6 @@ export async function requestOtp(req: Request, res: Response): Promise<void> {
 						</a>
 					  </td>
 					</tr>
-
 					<tr>
 					  <td style="background: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #888;">
 						© ${new Date().getFullYear()} KORE. All rights reserved.  
@@ -133,8 +129,7 @@ export async function requestOtp(req: Request, res: Response): Promise<void> {
 				  </table>
 				</div>
 				`
-			  });
-			
+			});
 			res.json({ message: 'OTP sent to your email' });
 			return;
 		} catch (mailErr) {
@@ -200,5 +195,29 @@ export async function me(req: Request, res: Response): Promise<void> {
 		res.json({ user });
 	} catch (error) {
 		res.status(500).json({ error: 'Failed to load profile' });
+	}
+}
+
+export async function updateMe(req: Request, res: Response): Promise<void> {
+	try {
+		const userId = (req as any).user?.id as string | undefined;
+		if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+		const { name, phone } = req.body || {};
+		const user = await User.findByIdAndUpdate(userId, { name, phone }, { new: true }).select('username email name phone createdAt');
+		res.json({ user });
+	} catch (error) {
+		res.status(500).json({ error: 'Failed to update profile' });
+	}
+}
+
+export async function deleteMe(req: Request, res: Response): Promise<void> {
+	try {
+		const userId = (req as any).user?.id as string | undefined;
+		if (!userId) { res.status(401).json({ error: 'Unauthorized' }); return; }
+		await Order.deleteMany({ userId });
+		await User.findByIdAndDelete(userId);
+		res.json({ message: 'Account and associated orders deleted' });
+	} catch (error) {
+		res.status(500).json({ error: 'Failed to delete account' });
 	}
 }

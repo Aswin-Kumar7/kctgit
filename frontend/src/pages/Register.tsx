@@ -9,6 +9,7 @@ const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -23,7 +24,7 @@ const Register: React.FC = () => {
     }
     setLoading(true);
     try {
-      await registerUser({ username, email, password, name, phone } as any);
+      await registerUser({ username, email, password, name, phone, address } as any);
       toast.success('Registered successfully');
       navigate('/login');
     } catch (e: any) {
@@ -57,6 +58,7 @@ const Register: React.FC = () => {
             <input className="input-field" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
             <input className="input-field" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
             <input className="input-field" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <input className="input-field" placeholder="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} />
             <input className="input-field" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <div className="relative">
               <input className="input-field pr-10" placeholder="Password" type={showPwd ? 'text':'password'} value={password} onChange={(e)=>setPassword(e.target.value)} />
