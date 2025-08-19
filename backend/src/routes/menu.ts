@@ -1,5 +1,4 @@
-import { Router, Request, Response } from 'express';
-import { menuItems } from '../data/menu'; // used for seeding and backwards compatibility
+import { Router, Request, Response } from 'express'; // used for seeding and backwards compatibility
 import { ApiResponse } from '../types';
 import MenuItemModel, { IMenuItem } from '../models/MenuItem';
 import { AuthenticatedRequest } from '../middleware/auth';
