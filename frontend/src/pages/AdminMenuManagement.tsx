@@ -9,7 +9,6 @@ const AdminMenuManagement: React.FC = () => {
     <div>
       <Navbar onCartClick={() => {}} />
       <div className="p-8 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Menu Management</h2>
         <AdminMenuManager />
       </div>
     </div>
