@@ -29,3 +29,31 @@
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
   }
 }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 360ms cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* Accordion / panel content animation */
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 320ms ease, opacity 220ms ease;
+  opacity: 0;
+}
+.accordion-content.open {
+  max-height: 1000px; /* large enough for content */
+  opacity: 1;
+}
+
+.order-card:hover {
+  transform: translateY(-4px);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+

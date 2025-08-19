@@ -1,3 +1,20 @@
+// Ensure admin user exists on server start
+import User from './models/User';
+async function ensureAdminUser() {
+	const adminEmail = 'admin@kore.com';
+	const adminPassword = 'admin1234';
+	const adminUsername = 'admin';
+	let existing = await User.findOne({ email: adminEmail });
+	if (!existing) {
+		await User.create({ username: adminUsername, email: adminEmail, password: adminPassword, name: 'Admin' });
+		console.log('Admin user created:', adminEmail);
+	} else {
+		existing.password = adminPassword;
+		await existing.save();
+		console.log('Admin user password reset:', adminEmail);
+	}
+}
+
 import path from "path";
 import dotenv from "dotenv";
 dotenv.config({ path: path.resolve(__dirname, "../.env") });
@@ -59,14 +76,14 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
-	console.log(`🚀 Server is running on port ${PORT}`);
-	console.log(`📖 API Documentation: http://localhost:${PORT}/health`);
-	console.log(`🍽️  Menu API: http://localhost:${PORT}/api/menu`);
-	console.log(`🔐  Auth API: http://localhost:${PORT}/api/auth`);
-	console.log(`📋 Orders API: http://localhost:${PORT}/api/order`);
-	console.log("Loaded ENV SMTP_USER:", process.env.SMTP_USER);
-
+ensureAdminUser().then(() => {
+	app.listen(PORT, () => {
+		console.log(`🚀 Server is running on port ${PORT}`);
+		console.log(`📖 API Documentation: http://localhost:${PORT}/health`);
+		console.log(`🍽️  Menu API: http://localhost:${PORT}/api/menu`);
+		console.log(`🔐  Auth API: http://localhost:${PORT}/api/auth`);
+		console.log(`📋 Orders API: http://localhost:${PORT}/api/order`);
+	});
 });
 
 export default app;

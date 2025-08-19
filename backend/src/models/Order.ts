@@ -11,7 +11,9 @@ export interface IOrder extends Document {
 	userId: Types.ObjectId;
 	items: IOrderItem[];
 	total: number;
-	status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered';
+	status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+	customerName?: string;
+	customerPhone?: string;
 	createdAt: Date;
 }
 
@@ -26,7 +28,9 @@ const OrderSchema = new Schema<IOrder>({
 	userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
 	items: { type: [OrderItemSchema], required: true },
 	total: { type: Number, required: true },
-	status: { type: String, enum: ['pending','confirmed','preparing','ready','delivered'], default: 'pending' },
+	status: { type: String, enum: ['pending','confirmed','preparing','ready','delivered','cancelled'], default: 'pending' },
+	customerName: { type: String, trim: true },
+	customerPhone: { type: String, trim: true },
 	createdAt: { type: Date, default: Date.now },
 });
 

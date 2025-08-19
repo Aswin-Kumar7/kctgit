@@ -1,15 +1,106 @@
-import { Router, Response } from 'express';
+import { Router } from 'express';
 import { menuItems } from '../data/menu';
 import { ApiResponse, Order as LegacyOrder, CreateOrderRequest, OrderItem } from '../types';
 import { authMiddleware, AuthenticatedRequest } from '../middleware/auth';
+import bcrypt from 'bcryptjs';
 import Order from '../models/Order';
 import User from '../models/User';
 import sendEmail from '../utils/mailer';
+import { Request, Response, NextFunction } from 'express'; // keep this import only
 
 const router = Router();
 
 // Protect all order routes
 router.use(authMiddleware);
+
+// Admin middleware (only allow hardcoded admin user)
+const adminEmail = 'admin@kore.com';
+function adminOnly(req: Request, res: Response, next: NextFunction) {
+	if ((req as any).user?.email === adminEmail) return next();
+	return res.status(403).json({ error: 'Admin access only' });
+}
+
+// GET /api/order/all - List all orders (admin only)
+router.get('/all', adminOnly, async (req, res) => {
+	try {
+		const docs = await Order.find({}).sort({ createdAt: -1 });
+		const data: LegacyOrder[] = [];
+		for (const o of docs) {
+			const user = await User.findById(o.userId);
+			data.push({
+					id: o.id,
+					userId: o.userId.toString(),
+					items: o.items.map(i => ({
+						menuItemId: i.menuItemId,
+						name: i.name,
+						price: i.price,
+						quantity: i.quantity,
+					})),
+					total: o.total,
+					status: o.status as any,
+					createdAt: o.createdAt,
+					customerName: o.customerName || user?.name,
+					customerPhone: o.customerPhone || user?.phone,
+					canCancel: !['preparing','ready','delivered'].includes(o.status),
+				});
+		}
+		res.json({ success: true, data });
+	} catch (error) {
+		res.status(500).json({ success: false, error: 'Failed to retrieve all orders' });
+	}
+});
+
+// PATCH /api/order/:id - Update order status (admin only)
+router.patch('/:id', adminOnly, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { status } = req.body;
+
+		const order = await Order.findById(id);
+		if (!order) {
+			return res.status(404).json({ error: 'Order not found' });
+		}
+
+		// If order is already cancelled, do not allow any further edits
+		if (order.status === 'cancelled') {
+			return res.status(400).json({ error: 'Cannot modify a cancelled order' });
+		}
+
+		const allowed = ['pending','confirmed','preparing','ready','delivered','cancelled'];
+		if (!allowed.includes(status)) {
+			return res.status(400).json({ error: 'Invalid status' });
+		}
+
+		// Only allow cancel if not preparing/ready/delivered
+		if (status === 'cancelled' && ['preparing','ready','delivered'].includes(order.status)) {
+			return res.status(400).json({ error: 'Cannot cancel after order is being prepared or completed' });
+		}
+
+		order.status = status;
+		await order.save();
+		return res.json({ success: true, data: order });
+	} catch (error) {
+		return res.status(500).json({ success: false, error: 'Failed to update order' });
+	}
+});
+
+// PATCH /api/order/:id/cancel - User cancels their own order if not preparing/ready/delivered
+router.patch('/:id/cancel', async (req: AuthenticatedRequest, res: Response) => {
+	try {
+		const { id } = req.params;
+		const order = await Order.findById(id);
+		if (!order) return res.status(404).json({ error: 'Order not found' });
+		if (order.userId.toString() !== req.user?.id) return res.status(403).json({ error: 'Forbidden' });
+		if (['preparing','ready','delivered'].includes(order.status)) {
+			return res.status(400).json({ error: 'Cannot cancel after order is being prepared or completed' });
+		}
+		order.status = 'cancelled';
+		await order.save();
+		return res.json({ success: true, data: order });
+	} catch (error) {
+		return res.status(500).json({ success: false, error: 'Failed to cancel order' });
+	}
+});
 
 // POST /api/order - Create a new order
 router.post('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<LegacyOrder>>): Promise<void> => {
@@ -42,6 +133,8 @@ router.post('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<Leg
 			items: orderItems,
 			total: Math.round(total * 100) / 100,
 			status: 'pending',
+			customerName: orderData.customerName,
+			customerPhone: orderData.customerPhone,
 		});
 
 		const response: LegacyOrder = {
@@ -51,8 +144,10 @@ router.post('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<Leg
 			total: created.total,
 			status: created.status as LegacyOrder['status'],
 			createdAt: created.createdAt,
-			customerName: user?.name,
-			customerPhone: user?.phone,
+			customerName: created.customerName || user?.name,
+			customerPhone: created.customerPhone || user?.phone,
+			canCancel: true,
+			
 		};
 
 		// Send order summary email (best-effort)
@@ -64,7 +159,6 @@ router.post('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<Leg
 				await sendEmail({ to: user.email, subject: 'KORE - Order Confirmation', text, html });
 			}
 		} catch (e) {
-			// Do not fail the order on email errors
 			console.warn('Order confirmation email failed:', (e as Error)?.message);
 		}
 
@@ -73,6 +167,55 @@ router.post('/', async (req: AuthenticatedRequest, res: Response<ApiResponse<Leg
 		res.status(500).json({ success: false, error: 'Failed to create order' });
 	}
 });
+
+// GET /api/order/me and /api/orders/me - List current user's orders
+const getUserOrders = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+	try {
+	console.log('GET /order/me called, user:', req.user);
+	if (!req.user?.id) {
+			console.error('No user in request for /me', req.user);
+			res.status(401).json({ success: false, error: 'Unauthorized' });
+			return;
+		}
+
+	const docs = await Order.find({ userId: req.user?.id }).sort({ createdAt: -1 });
+	console.log('Found orders count for user', req.user.id, ':', docs.length);
+		const user = await User.findById(req.user.id);
+
+		const data: LegacyOrder[] = [];
+		for (const o of docs) {
+			try {
+				data.push({
+					id: o.id,
+					userId: req.user?.id,
+					items: Array.isArray(o.items) ? o.items.map(i => ({
+						menuItemId: i.menuItemId,
+						name: i.name,
+						price: i.price,
+						quantity: i.quantity,
+					})) : [],
+					total: o.total || 0,
+					status: o.status as any,
+					createdAt: o.createdAt,
+					customerName: o.customerName || user?.name,
+					customerPhone: o.customerPhone || user?.phone,
+					canCancel: !['preparing','ready','delivered'].includes(o.status),
+				});
+			} catch (e) {
+				console.error('Failed to map order', o.id, e);
+			}
+		}
+
+		res.json({ success: true, data });
+	} catch (error) {
+		console.error('Error in /me:', error);
+		res.status(500).json({ success: false, error: 'Failed to retrieve orders' });
+	}
+};
+
+// Mount both /order/me and /orders/me routes to same handler
+router.get('/orders/me', getUserOrders);
+router.get('/me', getUserOrders);
 
 // GET /api/order/:id - Get order by ID
 router.get('/:id', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -87,35 +230,26 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response): Promise<voi
 			res.status(403).json({ success: false, error: 'Forbidden' });
 			return;
 		}
+		const user = await User.findById(req.user.id);
 		const data: LegacyOrder = {
 			id: order.id,
 			userId: req.user?.id,
-			items: order.items as any,
+			items: Array.isArray(order.items) ? order.items.map(i => ({
+				menuItemId: i.menuItemId,
+				name: i.name,
+				price: i.price,
+				quantity: i.quantity,
+			})) : [],
 			total: order.total,
 			status: order.status as any,
 			createdAt: order.createdAt,
+			customerName: order.customerName || user?.name,
+			customerPhone: order.customerPhone || user?.phone,
+			canCancel: !['preparing','ready','delivered'].includes(order.status),
 		};
 		res.json({ success: true, data });
 	} catch (error) {
 		res.status(500).json({ success: false, error: 'Failed to retrieve order' });
-	}
-});
-
-// GET /api/order/me - List current user's orders
-router.get('/me', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-	try {
-		const docs = await Order.find({ userId: req.user?.id }).sort({ createdAt: -1 });
-		const data: LegacyOrder[] = docs.map(o => ({
-			id: o.id,
-			userId: req.user?.id,
-			items: o.items as any,
-			total: o.total,
-			status: o.status as any,
-			createdAt: o.createdAt,
-		}));
-		res.json({ success: true, data });
-	} catch (error) {
-		res.status(500).json({ success: false, error: 'Failed to retrieve orders' });
 	}
 });
 

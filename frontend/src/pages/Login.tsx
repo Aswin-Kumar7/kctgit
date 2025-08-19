@@ -24,7 +24,11 @@ const Login: React.FC = () => {
       const { token, user } = await loginUser({ email, password });
       setAuth({ token, user });
       toast.success('Welcome back!');
-      navigate('/menu');
+      if (user.email === 'admin@kore.com') {
+        navigate('/admin');
+      } else {
+        navigate('/menu');
+      }
     } catch (e: any) {
       toast.error(e?.response?.data?.error || 'Login failed');
     } finally {
@@ -51,7 +55,11 @@ const Login: React.FC = () => {
       const { token, user } = await verifyOtp({ email, code });
       setAuth({ token, user });
       toast.success('Logged in');
-      navigate('/menu');
+      if (user.email === 'admin@kore.com') {
+        navigate('/admin');
+      } else {
+        navigate('/menu');
+      }
     } catch (e: any) {
       toast.error(e?.response?.data?.error || 'Invalid OTP');
     } finally { setLoading(false); }

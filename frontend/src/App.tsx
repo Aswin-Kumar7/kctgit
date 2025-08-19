@@ -11,6 +11,8 @@ import Register from './pages/Register';
 import MenuPage from './pages/Menu';
 import CartPage from './pages/Cart';
 import OrdersPage from './pages/Orders';
+import Admin from './pages/Admin';
+import AdminMenuManagement from './pages/AdminMenuManagement.tsx';
 
 const App: React.FC = () => {
   return (
@@ -26,6 +28,8 @@ const App: React.FC = () => {
             <Route path="/menu" element={<ProtectedRoute><MenuPage /></ProtectedRoute>} />
             <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/menumanagement" element={<AdminMenuManagement />} />
             <Route path="*" element={<Navigate to="/intro" replace />} />
           </Routes>
         </BrowserRouter>

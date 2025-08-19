@@ -1,3 +1,21 @@
+// User cancel order
+export const cancelOrder = async (id: string): Promise<Order> => {
+  const response = await api.patch<ApiResponse<Order>>(`/order/${id}/cancel`);
+  if (!response.data.data) throw new Error('Failed to cancel order');
+  return response.data.data;
+};
+// Admin Orders API
+export const getAllOrders = async (): Promise<Order[]> => {
+  const response = await api.get<ApiResponse<Order[]>>('/order/all');
+  if (!response.data.data) throw new Error('Failed to fetch orders');
+  return response.data.data;
+};
+
+export const updateOrderStatus = async (id: string, status: string): Promise<Order> => {
+  const response = await api.patch<ApiResponse<Order>>(`/order/${id}`, { status });
+  if (!response.data.data) throw new Error('Failed to update order');
+  return response.data.data;
+};
 import axios from 'axios';
 import { MenuItem, Order, CreateOrderRequest, ApiResponse } from '../types';
 
@@ -12,7 +30,13 @@ const api = axios.create({
 
 // Request interceptor for auth token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const getTokenFromCookie = () => {
+    if (typeof document === 'undefined') return null;
+    const m = document.cookie.match(/(?:^|; )token=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  };
+
+  const token = localStorage.getItem('token') || getTokenFromCookie();
   if (token) {
     config.headers = config.headers || {};
     (config.headers as any).Authorization = `Bearer ${token}`;
@@ -24,10 +48,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err?.response?.status === 401) {
-      localStorage.removeItem('token');
-      // optional: reload or redirect handled in UI
-    }
+  // Do not auto-remove token/cookie on 401 to allow testing multiple sessions in different browsers.
+  // UI should handle logout explicitly when necessary.
     return Promise.reject(err);
   }
 );
@@ -85,6 +107,31 @@ export const getMenuItem = async (id: string): Promise<MenuItem> => {
   return response.data.data;
 };
 
+// Admin Menu CRUD
+export const createMenuItem = async (item: MenuItem): Promise<MenuItem> => {
+  const res = await api.post<ApiResponse<MenuItem>>('/menu', item);
+  if (!res.data.data) throw new Error('Failed to create menu item');
+  return res.data.data;
+};
+
+export const updateMenuItem = async (id: string, update: Partial<MenuItem>): Promise<MenuItem> => {
+  const res = await api.put<ApiResponse<MenuItem>>(`/menu/${id}`, update);
+  if (!res.data.data) throw new Error('Failed to update menu item');
+  return res.data.data;
+};
+
+export const deleteMenuItem = async (id: string): Promise<void> => {
+  await api.delete(`/menu/${id}`);
+};
+
+export const uploadMenuImage = async (file: File): Promise<{ id: string; url: string }> => {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await api.post('/menu/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  if (!res.data.data) throw new Error('Upload failed');
+  return res.data.data;
+};
+
 // Orders API
 export const createOrder = async (orderData: CreateOrderRequest): Promise<Order> => {
   const response = await api.post<ApiResponse<Order>>('/order', orderData);
@@ -99,14 +146,8 @@ export const getOrder = async (id: string): Promise<Order> => {
 };
 
 export const getMyOrders = async (): Promise<Order[]> => {
-  // support both /orders/me and /order/me/list (compat)
-  try {
-    const res = await api.get<ApiResponse<Order[]>>('/orders/me');
-    return (res.data as any).data || res.data || [];
-  } catch {
-    const res2 = await api.get<ApiResponse<Order[]>>('/order/me/list');
-    return (res2.data as any).data || res2.data || [];
-  }
+  const res = await api.get<ApiResponse<Order[]>>('/order/me');
+  return res.data.data || [];
 };
 
 export default api;

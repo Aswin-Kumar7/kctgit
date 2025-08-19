@@ -24,6 +24,8 @@ export interface Order {
   createdAt: Date;
   customerName?: string;
   customerPhone?: string;
+  canCancel?: boolean; // <--- add this
+
 }
 
 export interface CreateOrderRequest {

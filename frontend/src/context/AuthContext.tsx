@@ -19,13 +19,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+  const storedToken = localStorage.getItem('token') || (document.cookie.match(/(^|;)\s*token=([^;]+)/)?.[2] ?? null);
     if (storedToken) {
       setToken(storedToken);
       getMe()
         .then((res) => setUser(res))
         .catch(() => {
-          localStorage.removeItem('token');
+      // keep cookie but clear localStorage fallback
+      localStorage.removeItem('token');
           setToken(null);
         })
         .finally(() => setLoading(false));
@@ -35,15 +36,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const setAuth = ({ token, user }: { token: string; user: AuthUser }) => {
-    localStorage.setItem('token', token);
+  // store token in cookie (allow multiple browser profiles) and localStorage fallback
+  document.cookie = `token=${token}; path=/; max-age=${60 * 60 * 24}; SameSite=Lax`;
+  localStorage.setItem('token', token);
     setToken(token);
     setUser(user);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
+  localStorage.removeItem('token');
+  // clear cookie
+  document.cookie = 'token=; path=/; max-age=0; SameSite=Lax';
+  setToken(null);
+  setUser(null);
   };
 
   return (

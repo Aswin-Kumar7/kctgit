@@ -19,7 +19,7 @@ export interface Order {
   id: string;
   items: OrderItem[];
   total: number;
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered';
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
   createdAt: Date;
   customerName?: string;
   customerPhone?: string;
