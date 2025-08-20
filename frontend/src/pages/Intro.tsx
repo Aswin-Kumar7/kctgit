@@ -86,7 +86,7 @@ const Intro: React.FC = () => {
           onClick={() => navigate('/login')}
           className="mt-8 inline-flex items-center justify-center px-10 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300 border border-orange-400/20"
         >
-          <span className="mr-2">🚀</span>
+          <span className="mr-2"></span>
           Get Started
         </motion.button>
 

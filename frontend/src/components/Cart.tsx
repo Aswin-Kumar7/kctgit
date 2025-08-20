@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaTrash, FaMinus, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaTrash, FaMinus, FaPlus, FaTimes, FaShoppingCart } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import Checkout from './Checkout';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,52 +45,91 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-          <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'tween', duration: 0.3 }} className="bg-white w-full max-w-md h-full flex flex-col shadow-2xl">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
-              <h2 className="text-xl font-semibold text-gray-900">Your Cart</h2>
-              <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition-colors">
-                <FaTimes className="h-5 w-5" />
-              </button>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 z-50 flex justify-end"
+        >
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            className="bg-white w-full max-w-md h-full flex flex-col shadow-2xl"
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-50 to-rose-50 border-b border-gray-200 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FaShoppingCart className="h-5 w-5 text-orange-600" />
+                  <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
+                </div>
+                <button onClick={onClose} className="text-gray-600 hover:text-gray-800 transition-colors">
+                  <FaTimes className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
+            {/* Body */}
             <div className="flex-1 overflow-y-auto p-4">
               {state.items.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-lg mb-4">Your cart is empty</p>
+                <div className="text-center py-16">
+                  <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center">
+                    <FaShoppingCart className="h-7 w-7 text-gray-400" />
+                  </div>
+                  <p className="text-gray-600 text-lg mb-4">Your cart is empty</p>
                   <button onClick={onClose} className="btn-primary">Browse Menu</button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {state.items.map((item) => (
-                    <div key={item.menuItem.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
+                    <motion.div
+                      key={item.menuItem.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl bg-white hover:shadow-md transition-shadow"
+                    >
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900">{item.menuItem.name}</h3>
+                        <h3 className="font-semibold text-gray-900 leading-tight">{item.menuItem.name}</h3>
                         <p className="text-sm text-gray-600">{formatPrice(item.menuItem.price)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleUpdateQuantity(item.menuItem.id, item.quantity - 1)} className="p-1 text-gray-500 hover:text-gray-700 transition-colors">
+                        <button
+                          onClick={() => handleUpdateQuantity(item.menuItem.id, item.quantity - 1)}
+                          className="h-8 w-8 flex items-center justify-center rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                          aria-label="Decrease quantity"
+                        >
                           <FaMinus className="h-3 w-3" />
                         </button>
-                        <span className="w-8 text-center font-medium">{item.quantity}</span>
-                        <button onClick={() => handleUpdateQuantity(item.menuItem.id, item.quantity + 1)} className="p-1 text-gray-500 hover:text-gray-700 transition-colors">
+                        <span className="min-w-[2rem] text-center font-semibold text-gray-800">{item.quantity}</span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item.menuItem.id, item.quantity + 1)}
+                          className="h-8 w-8 flex items-center justify-center rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                          aria-label="Increase quantity"
+                        >
                           <FaPlus className="h-3 w-3" />
                         </button>
-                        <button onClick={() => handleRemoveItem(item.menuItem.id)} className="p-1 text-red-500 hover:text-red-700 transition-colors ml-2">
-                          <FaTrash className="h-3 w-3" />
+                        <button
+                          onClick={() => handleRemoveItem(item.menuItem.id)}
+                          className="ml-1 h-8 w-8 flex items-center justify-center rounded-md bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                          aria-label="Remove item"
+                        >
+                          <FaTrash className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
             </div>
 
+            {/* Footer */}
             {state.items.length > 0 && (
               <div className="border-t border-gray-200 p-4 bg-white">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-lg font-semibold text-gray-900">Total:</span>
-                  <span className="text-xl font-bold text-primary-600">{formatPrice(animatedTotal)}</span>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-base font-semibold text-gray-900">Total</span>
+                  <span className="text-2xl font-extrabold text-orange-600">{formatPrice(animatedTotal)}</span>
                 </div>
                 <button onClick={() => setShowCheckout(true)} className="w-full btn-primary">
                   Proceed to Checkout
